@@ -82,31 +82,33 @@ public_users.get("/author/:author", async (req, res) => {
     );
 
     if (filteredBooks.length === 0) {
-      return res.status(404).json({ message: "Autor no encontrado" });
+      return res.status(404).json({ message: "Author not found" });
     }
 
     res.status(200).json(filteredBooks);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener libros", error: error.message });
+    res.status(500).json({ message: "Error getting books", error: error.message });
   }
 });
 
 // Get all books based on title
-public_users.get('/title/:title', function (req, res) {
-  const title = req.params.title;
-  let filteredBooks = [];
+public_users.get("/title/:title", async (req, res) => {
+  try {
+    const books = await axios.get("http://localhost:5000/booksdb");
+    const title = req.params.title.toLowerCase();
 
-  // Convert array and filter by title
-  Object.keys(books).forEach(key => {
-    if (books[key].title.toLowerCase() === title.toLowerCase()) {
-      filteredBooks.push({ isbn: key, ...books[key] });
+    // Filter books by title
+    const filteredBooks = Object.values(books).filter((book) =>
+      book.title.toLowerCase() === title
+    );
+
+    if (filteredBooks.length === 0) {
+      return res.status(404).json({ message: "Title not found" });
     }
-  });
 
-  if (filteredBooks.length > 0) {
     res.status(200).json(filteredBooks);
-  } else {
-    res.status(404).json({ message: "No book found with the given title." });
+  } catch (error) {
+    res.status(500).json({ message: "Error getting books", error: error.message });
   }
 });
 

@@ -1,4 +1,5 @@
 const express = require('express');
+const axios = require('axios');
 let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
@@ -14,6 +15,10 @@ public_users.post("/register", (req, res) => {
     return res.status(400).json({
       message: "Username and password are required."
     });
+  }
+
+  if (!isValid(username)) {
+        return res.status(400).json({ message: "This username is invalid" });
   }
 
   // Check if the user is already registered
@@ -33,9 +38,18 @@ public_users.post("/register", (req, res) => {
 });
 
 // Get the book list available in the shop
-public_users.get('/',function (req, res) {
-  //Write your code here
-  return res.status(200).send(JSON.stringify(books, null, 4));
+public_users.get("/", async (req, res) => {
+  try {
+    const response = await axios.get('http://localhost:5000/booksdb'); // Route simulates local access
+    return res.status(200).json(response.data);
+  } catch (error) {
+    return res.status(500).json({ message: "Error retrieving books", error: error.message });
+  }
+});
+
+// Route simulates local access
+public_users.get("/booksdb", (req, res) => {
+  res.status(200).json(books);
 });
 
 // Get book details based on ISBN
